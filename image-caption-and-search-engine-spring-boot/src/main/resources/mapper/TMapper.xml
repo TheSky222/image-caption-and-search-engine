@@ -5,8 +5,7 @@
 <!--绑定一个对应的Dao/Map接口-->
 <mapper namespace="com.searchengine.dao.TDao">
     <insert id="insert1" parameterType="list">
-        insert into segmentation(word)
-        values
+        insert into segmentation(word) values
         <foreach collection="segs" item="item" separator=",">
             (#{item})
         </foreach>

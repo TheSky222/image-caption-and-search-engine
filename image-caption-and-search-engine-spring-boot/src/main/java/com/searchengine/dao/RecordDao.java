@@ -18,4 +18,6 @@ public interface RecordDao {
     Record selectById(@Param("id") int id);
 
     int insertRecord(Record record);
+
+    int selectRecordCount();
 }

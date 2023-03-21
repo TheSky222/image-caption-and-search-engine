@@ -22,7 +22,7 @@ public class TFIDFAnalyzer
 	static HashMap<String,Double> idfMap;
 	static HashSet<String> stopWordsSet;
 	static double idfMedian;
-	
+
 	/**
 	 * tfidf分析方法
 	 * @param content 需要分析的文本/文档内容

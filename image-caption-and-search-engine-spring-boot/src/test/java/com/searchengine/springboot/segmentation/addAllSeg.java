@@ -50,23 +50,23 @@ public class addAllSeg {
     @Autowired
     private TDao tDao;
 
-    TFIDFAnalyzer tfidfAnalyzer=new TFIDFAnalyzer();
+    TFIDFAnalyzer tfidfAnalyzer = new TFIDFAnalyzer();
     JiebaSegmenter jiebaSegmenter = new JiebaSegmenter();
 
     static HashSet<String> stopWordsSet;
 
 
     @Test
-    public void addAllSeg(){
+    public void addAllSeg() {
 
         //-----------------初始化-------------
         List<Record> records = recordService.queryAllRecord();
         List<Segmentation> segmentations = segmentationService.queryAllSeg();
 
-        BloomFilter<String> bf = BloomFilter.create(Funnels.stringFunnel(Charset.forName("UTF-8")),10000000);
+        BloomFilter<String> bf = BloomFilter.create(Funnels.stringFunnel(Charset.forName("UTF-8")), 10000000);
 
-        if(stopWordsSet==null) {
-            stopWordsSet=new HashSet<>();
+        if (stopWordsSet == null) {
+            stopWordsSet = new HashSet<>();
             loadStopWords(stopWordsSet, this.getClass().getResourceAsStream("/jieba/stop_words.txt"));
         }
 
@@ -74,22 +74,21 @@ public class addAllSeg {
             bf.put(seg.getWord());
         }
         //----------------初始化结束---------------
-
-
         //----------------开始加词-----------------
-        for (int loop=0;loop<75;loop++) {
+
+        for (int loop = 0; loop < 75; loop++) {
 
             List<String> segs = new ArrayList<>(10000);
             List<RecordSeg> relations = new ArrayList<>(10000);
 
             int segMaxId = segmentationDao.getMaxId();  // 获取seg表中最大的id
 
-            for (int i = loop*10000; i < (loop+1)*10000; i++) {  // 10000 15s
+            for (int i = loop * 10000; i < (loop + 1) * 10000; i++) {  // 10000 15s
                 Record record = records.get(i);
                 String caption = record.getCaption();
                 List<SegToken> segTokens = jiebaSegmenter.process(caption, JiebaSegmenter.SegMode.INDEX);
-                List<Keyword> keywords = tfidfAnalyzer.analyze(caption,5);
-                Map<String,RecordSeg> countMap = new HashMap<>();
+                List<Keyword> keywords = tfidfAnalyzer.analyze(caption, 5);
+                Map<String, RecordSeg> countMap = new HashMap<>();
                 for (SegToken segToken : segTokens) {
                     String word = segToken.word;
                     if (stopWordsSet.contains(word)) continue;//判断是否是停用词
@@ -101,7 +100,7 @@ public class addAllSeg {
                         segId = ++segMaxId;
                         segmentations.add(new Segmentation(segMaxId, word));
                     } else {  // 但是存在不一定是真的存在，但是这种误报的可能性很小，所以这时全部遍历的时间开销是完全可以接受的。
-                              // https://www.geeksforgeeks.org/bloom-filter-in-java-with-examples/ 误报概率参考，1千万分之一
+                        // https://www.geeksforgeeks.org/bloom-filter-in-java-with-examples/ 误报概率参考，1千万分之一
                         // 需要检查一下是不是真的存在
                         for (Segmentation seg : segmentations) {
                             if (word.equals(seg.getWord())) {
@@ -127,14 +126,14 @@ public class addAllSeg {
                         }
                     }
                     //--------------计数--------------
-                    if (!countMap.containsKey(word)){
+                    if (!countMap.containsKey(word)) {
                         int count = 1;
-                        countMap.put(word,new RecordSeg(dataId, segId, tf, count));
-                    }else {
+                        countMap.put(word, new RecordSeg(dataId, segId, tf, count));
+                    } else {
                         RecordSeg t = countMap.get(word);
                         int count = t.getCount();
                         t.setCount(++count);
-                        countMap.put(word,t);
+                        countMap.put(word, t);
                     }
                     //--------------------------------
                 }
@@ -142,12 +141,50 @@ public class addAllSeg {
                     relations.add(t);
                 }
             }
-
             segmentationDao.insertBatchSeg(segs);
             recordSegDao.insertBatch(relations);
         }
 
     }
+
+
+//    @Test
+    /**
+     * @author: optimjie
+     * @description: 先单纯的添加分词表，为关系表的建立做准备
+     * @date: 2022-05-23 10:53
+     */
+//    public void addSegss() {
+//        // List<Record> records = recordService.queryAllRecord();
+//        List<String> segs = new ArrayList<>();
+//        BloomFilter<String> bf = BloomFilter.create(Funnels.stringFunnel(Charset.forName("UTF-8")), 10000000);
+//        if (stopWordsSet == null) {
+//            stopWordsSet = new HashSet<>();
+//            loadStopWords(stopWordsSet, this.getClass().getResourceAsStream("/jieba/stop_words.txt"));
+//        }
+//        for (int loop = 0; loop < 300; loop++) {
+//            List<Record> records = recordService.selectPartialRecords(10000, Math.max(0, loop * 10000));
+//            if (loop % 10 == 0 && loop != 0) {  // 这里注意loop应该不等于起始值，不一定非是0，因为起始值会空的，先这样写着。
+//                tDao.insert1(segs);
+//                segs.clear();
+//            }
+//            for (int i = loop * 10000; i < (loop + 1) * 10000; i++) {
+//                Record record = records.get(i % 10000);
+//                String caption = record.getCaption();
+//                List<SegToken> segTokens = jiebaSegmenter.process(caption, JiebaSegmenter.SegMode.INDEX);
+//                for (SegToken segToken : segTokens) {
+//                    String word = segToken.word;
+//                    if (stopWordsSet.contains(word)) continue; // 判断是否是停用词
+//                    if (!bf.mightContain(word)) {
+//                        bf.put(word);
+//                        segs.add(word);
+//                    }
+//                }
+//            }
+//        }
+//        tDao.insert1(segs);
+//    }
+
 
     @Test
     /**
@@ -158,24 +195,33 @@ public class addAllSeg {
     public void addSegs() {
         // List<Record> records = recordService.queryAllRecord();
         List<String> segs = new ArrayList<>();
-        BloomFilter<String> bf = BloomFilter.create(Funnels.stringFunnel(Charset.forName("UTF-8")),10000000);
+        //创建符合条件的布隆过滤器,预期数据量10000，错误率0.0001
+        BloomFilter<String> bf = BloomFilter.create(Funnels.stringFunnel(Charset.forName("UTF-8")), 10000000, 0.00001);
         if (stopWordsSet == null) {
             stopWordsSet = new HashSet<>();
             loadStopWords(stopWordsSet, this.getClass().getResourceAsStream("/jieba/stop_words.txt"));
         }
-        for (int loop = 0; loop < 300; loop++) {
+        //获得表中数据量
+        int dataTableCount = recordService.selectRecordCount();
+        int size = (dataTableCount - 1) / 10000 + 1;
+        for (int loop = 0; loop < size; loop++) {
+            //查10000条数据从第二个参数开始
             List<Record> records = recordService.selectPartialRecords(10000, Math.max(0, loop * 10000));
             if (loop % 10 == 0 && loop != 0) {  // 这里注意loop应该不等于起始值，不一定非是0，因为起始值会空的，先这样写着。
                 tDao.insert1(segs);
                 segs.clear();
             }
             for (int i = loop * 10000; i < (loop + 1) * 10000; i++) {
+                if (i >= dataTableCount) break;
                 Record record = records.get(i % 10000);
                 String caption = record.getCaption();
+                //把data里面的caption数据拿出来分词
+                //SEARCH是基本模式，而INDEX会将SEARCH模式结果中的长词再次拆分
                 List<SegToken> segTokens = jiebaSegmenter.process(caption, JiebaSegmenter.SegMode.INDEX);
                 for (SegToken segToken : segTokens) {
                     String word = segToken.word;
                     if (stopWordsSet.contains(word)) continue; // 判断是否是停用词
+                    //查看布隆过滤器是否包含word
                     if (!bf.mightContain(word)) {
                         bf.put(word);
                         segs.add(word);
@@ -204,14 +250,19 @@ public class addAllSeg {
             loadStopWords(stopWordsSet, this.getClass().getResourceAsStream("/jieba/stop_words.txt"));
         }
         Map<Integer, List<T>> mp = new HashMap<>(100000);
+
         int cnt = 0;
-        for (int loop = 0; loop < 300; loop++) {
+        //获取表中数据量
+        int dataTableCount = recordService.selectRecordCount();
+        int size = (dataTableCount - 1) / 10000 + 1;
+        for (int loop = 0; loop < size; loop++) {
             List<Record> records = recordService.selectPartialRecords(10000, Math.max(0, loop * 10000));
             for (int i = loop * 10000; i < (loop + 1) * 10000; i++) {
+                if (i >= dataTableCount) break;
                 Record record = records.get(i % 10000);
                 String caption = record.getCaption();
                 List<SegToken> segTokens = jiebaSegmenter.process(caption, JiebaSegmenter.SegMode.INDEX);
-                List<Keyword> keywords = tfidfAnalyzer.analyze(caption,5);
+                List<Keyword> keywords = tfidfAnalyzer.analyze(caption, 5);
                 Map<String, T> countMap = new HashMap<>();
                 for (SegToken segToken : segTokens) {
                     String word = segToken.word;
@@ -225,14 +276,14 @@ public class addAllSeg {
                             break;
                         }
                     }
-                    if (!countMap.containsKey(word)){
+                    if (!countMap.containsKey(word)) {
                         int count = 1;
                         countMap.put(word, new T(dataId, segId, tf, count));
                     } else {
                         T t = countMap.get(word);
                         int count = t.getCount();
                         t.setCount(++count);
-                        countMap.put(word,t);
+                        countMap.put(word, t);
                     }
                 }
                 for (T t : countMap.values()) {
@@ -264,26 +315,20 @@ public class addAllSeg {
         }
     }
 
-    private void loadStopWords(Set<String> set, InputStream in){
+    private void loadStopWords(Set<String> set, InputStream in) {
         BufferedReader bufr;
-        try
-        {
+        try {
             bufr = new BufferedReader(new InputStreamReader(in));
-            String line=null;
-            while((line=bufr.readLine())!=null) {
+            String line = null;
+            while ((line = bufr.readLine()) != null) {
                 set.add(line.trim());
             }
-            try
-            {
+            try {
                 bufr.close();
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

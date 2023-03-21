@@ -193,4 +193,9 @@ public class RecordServiceImpl implements RecordService {
         }
         return true;
     }
+
+    @Override
+    public int selectRecordCount() {
+        return recordDao.selectRecordCount();
+    }
 }

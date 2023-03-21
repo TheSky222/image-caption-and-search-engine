@@ -21,4 +21,6 @@ public interface RecordService {
 
     Boolean addRecord(Record record);
 
+    int selectRecordCount();
+
 }
