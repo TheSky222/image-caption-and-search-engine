@@ -61,7 +61,7 @@
     </el-row>
     <el-row id="input">
       <div>
-        <img src="~@/assets/1057.png" alt="" />
+        <img src="~@/assets/logo1.jpg" alt="" />
       </div>
       <el-autocomplete v-model="search_word" style="width: 600px;"
                        :fetch-suggestions="querySearchAsync" @select="handleSelect"

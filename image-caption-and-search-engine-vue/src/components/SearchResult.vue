@@ -4,7 +4,7 @@
       <el-row style="height: 200px; width: 100%; display: flex">
         <el-col style="width: 100px; margin-right: 10px">
           <div>
-            <a href="/"><img src="~@/assets/1057inRes.png" alt="" /></a>
+            <a href="/"><img src="~@/assets/logo.jpg" alt="" /></a>
           </div>
         </el-col>
         <el-col>
@@ -142,7 +142,7 @@
             }"
             @click="tranfer1('picToPic')"
           >
-            搜图
+            识图
           </div>
         </div>
         <el-row>
