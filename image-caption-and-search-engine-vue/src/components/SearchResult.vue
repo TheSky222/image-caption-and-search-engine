@@ -377,7 +377,7 @@ export default {
       addToFavoritedialogVisible: false,
       timer: '',
       // 识图所需数据
-      msg: 'init',//识图结果
+      msg: '请上传图片',//识图结果
       imageUrl: '',//上传图片地址
     };
   },

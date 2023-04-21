@@ -4,6 +4,9 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import os
 import replicate
+from translate import Translator
+import requests
+import hashlib   # 用来计算MD5码
 
 # configuration
 DEBUG = True
@@ -19,6 +22,29 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 CORS(app, resources={r'/*': {'origins': '*'}})
 # CORS.init_app(app)
 
+def fanyi(shuru):
+    header = {
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.96 Safari/537.36',
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
+    appid, salt, key = "20230420001649424", "20010222", "9lXNkTFDLNtpVpkvagSt"
+    q = shuru
+    sign = appid+q+salt+key
+    md5 = hashlib.md5()
+    md5.update(sign.encode('utf-8'))  # 生成签名计算MD5码
+    data = {
+        "q": q,
+        "from": "auto",
+        "to": "zh",
+        "appid": appid,
+        "salt": salt,
+        "sign": md5.hexdigest()
+    }
+    response = requests.post('https://fanyi-api.baidu.com/api/trans/vip/translate',headers=header, data=data )  # 发送post请求
+    text = response.json()  # 返回的为json格式用json接收数据
+#     print(text)
+    shuchu = text['trans_result'][0]['dst']
+    return shuchu
 
 # 添加header解决跨域
 @app.after_request
@@ -68,8 +94,12 @@ def image_caption():
     }
     # Set the REPLICATE_API_TOKEN environment variable
     output = version.predict(**inputs)
+
+    output_cn = fanyi(output)
     # print(output)
-    return jsonify({'output': output})
+
+    return jsonify({'output': output_cn})
+
 
 
 if __name__ == '__main__':
