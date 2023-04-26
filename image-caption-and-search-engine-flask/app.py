@@ -7,6 +7,7 @@ import replicate
 from translate import Translator
 import requests
 import hashlib   # 用来计算MD5码
+import paramiko
 
 # configuration
 DEBUG = True
@@ -21,6 +22,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # enable CORS 跨域设置
 CORS(app, resources={r'/*': {'origins': '*'}})
 # CORS.init_app(app)
+
 
 def fanyi(shuru):
     header = {
@@ -45,6 +47,21 @@ def fanyi(shuru):
 #     print(text)
     shuchu = text['trans_result'][0]['dst']
     return shuchu
+
+
+def upload(file, filename, file_path):
+    # file = request.files['file']
+    # filename = file.filename
+    # 连接远程服务器
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect('43.142.94.114', username='root', password='Lht010222')
+    # 上传文件
+    sftp = ssh.open_sftp()
+    sftp.put(file_path, '/workspace/images/' + filename)
+    sftp.close()
+    ssh.close()
+    return 'File uploaded successfully!'
 
 # 添加header解决跨域
 @app.after_request
@@ -72,13 +89,18 @@ def get_image():
 
 @app.route('/clip', methods=['GET', 'POST'])
 def image_caption():
-    # print(request.files)
+
     file = request.files['file']
+    filename = file.filename
+
+    # print(request.files)
     # print(file)
     # print(file.filename)
+
     src_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
     # print(src_path)
     file.save(src_path)
+    upload(file, filename, src_path)
     os.environ["REPLICATE_API_TOKEN"] = "9628f53cd9211bbe8b376778218135cb39f68359"
     model = replicate.models.get("rmokady/clip_prefix_caption")
     version = model.versions.get("9a34a6339872a03f45236f114321fb51fc7aa8269d38ae0ce5334969981e4cd8")
@@ -94,11 +116,11 @@ def image_caption():
     }
     # Set the REPLICATE_API_TOKEN environment variable
     output = version.predict(**inputs)
-
-    output_cn = fanyi(output)
+    # output_cn = fanyi(output)
     # print(output)
 
-    return jsonify({'output': output_cn})
+    return jsonify({'output': output})
+
 
 
 
