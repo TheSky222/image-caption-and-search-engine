@@ -43,7 +43,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)// 不通过session获取sessionContext;
                 .and()
                 .authorizeRequests()
-                .antMatchers("/user/login", "/","/user/logout", "/register", "/search_test", "/related_word", "/imageUpload","/survival","/search_use_split",
+                .antMatchers("/user/login","/seg/saveData", "/","/user/logout", "/register", "/search_test", "/related_word", "/imageUpload","/survival","/search_use_split",
                         "/getFavorites", "/updateTreeNodeName", "/deleteTreeNode", "/addTreeNode", "/prefix_word").permitAll()//不拦截这些路径
                 .anyRequest().authenticated();
 
