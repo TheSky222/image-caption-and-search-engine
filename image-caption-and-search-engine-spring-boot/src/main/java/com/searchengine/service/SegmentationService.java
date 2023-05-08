@@ -26,4 +26,6 @@ public interface SegmentationService {
     boolean insertBatchSeg(List<String> segs);
 
     List<String> getAllByWords(@Param("word") String word);
+
+    void saveData(String url, String caption);
 }
