@@ -8,6 +8,7 @@ from translate import Translator
 import requests
 import hashlib   # 用来计算MD5码
 import paramiko
+import requests
 
 # configuration
 DEBUG = True
@@ -63,6 +64,7 @@ def upload(file, filename, file_path):
     ssh.close()
     return 'File uploaded successfully!'
 
+
 # 添加header解决跨域
 @app.after_request
 def after_request(response):
@@ -75,9 +77,26 @@ def after_request(response):
 # sanity check route
 
 
-@app.route('/open', methods=['GET'])
+@app.route('/test', methods=['POST'])
 def open_door():
-    return jsonify('芝麻开门！123')
+    url = "http://localhost:9090/seg/saveData"  # 接口地址
+    headers = {'Content-Type': 'application/json'}  # 请求头
+    # image_url = "http://43.142.94.114/images/" + filename
+    # print(image_url, output_cn)
+    # print(type(image_url), type(output_cn))
+    image_url = "http://43.142.94.114/images/black_cat.png"
+    output_cn = "躺着的黑猫"
+    data = {'url': image_url, 'caption': output_cn}  # 请求参数
+    response = requests.post(url, json=data, headers=headers)  # 发送请求
+    if response.status_code == 200:  # 判断请求是否成功
+        response_json = response.json()  # 解析响应数据
+        print(response_json)
+    else:
+        response_json = response.json()  # 解析响应数据
+        print(response_json)
+        print("请求失败")
+    return "<p>Hello, World!</p>"
+
 
 
 @app.route('/image', methods=['POST'])
@@ -90,17 +109,18 @@ def get_image():
 @app.route('/clip', methods=['GET', 'POST'])
 def image_caption():
 
+    # 上传文件
     file = request.files['file']
     filename = file.filename
-
     # print(request.files)
     # print(file)
     # print(file.filename)
-
     src_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
     # print(src_path)
     file.save(src_path)
     upload(file, filename, src_path)
+
+    # 图像识别
     os.environ["REPLICATE_API_TOKEN"] = "9628f53cd9211bbe8b376778218135cb39f68359"
     model = replicate.models.get("rmokady/clip_prefix_caption")
     version = model.versions.get("9a34a6339872a03f45236f114321fb51fc7aa8269d38ae0ce5334969981e4cd8")
@@ -116,10 +136,27 @@ def image_caption():
     }
     # Set the REPLICATE_API_TOKEN environment variable
     output = version.predict(**inputs)
-    # output_cn = fanyi(output)
+
+    # 翻译输出
+    output_cn = fanyi(output)
     # print(output)
 
-    return jsonify({'output': output})
+    # 调用spring接口将数据导入数据库并重新分词和计算关联度
+    url = "http://localhost:9090/seg/saveData"  #接口地址
+    headers = {'Content-Type': 'application/json'}  # 请求头
+    image_url = "http://43.142.94.114/images/" + filename
+    print(image_url, output_cn)
+    print(type(image_url), type(output_cn))
+    data = {'url': image_url, 'caption': output_cn}  # 请求参数
+    response = requests.post(url, json=data, headers=headers)  # 发送请求
+    if response.status_code == 200:  # 判断请求是否成功
+        data = response.json()  # 解析响应数据
+        print(data)
+    else:
+        data = response.json()  # 解析响应数据
+        print(data)
+        print("请求失败")
+    return jsonify({'output': output_cn})
 
 
 
