@@ -1,7 +1,8 @@
 package com.searchengine.dao;
 
 import com.searchengine.entity.Segmentation;
-import io.lettuce.core.dynamic.annotation.Param;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Update;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -19,7 +20,13 @@ public interface SegmentationDao {
     //查询最大id
     int getMaxId();
     //批量插入分词
-    boolean insertBatchSeg(@org.apache.ibatis.annotations.Param("segs")List<String> segs);
+    boolean insertBatchSeg(@Param("segs")List<String> segs);
 
     List<Segmentation> getAllByWords(String word);
+
+    void saveData(@org.apache.ibatis.annotations.Param("url") String url,@org.apache.ibatis.annotations.Param("caption") String caption);
+
+    void truncateTable();
+    @Update("DROP TABLE IF EXISTS ${tableName}")
+    void deleteTable(@org.apache.ibatis.annotations.Param("tableName") String tableName);
 }

@@ -23,6 +23,10 @@
 <!--        </association>-->
 
     </resultMap>
+    <update id="truncateTable">
+        truncate table segmentation
+    </update>
+
 
     <select id="selectAllSeg" resultType="com.searchengine.entity.Segmentation">
         select * from segmentation
@@ -52,6 +56,25 @@
             (#{item})
         </foreach>
 
+    </insert>
+    <insert id="saveData">
+        INSERT INTO data
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test='url != null and url != "" '>
+                url,
+            </if>
+            <if test='caption != null and caption != "" '>
+                caption,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test='url != null and url != "" '>
+                #{url},
+            </if>
+            <if test='caption != null and caption != "" '>
+                #{caption},
+            </if>
+        </trim>
     </insert>
 
     <select id="getAllByWords" resultType="com.searchengine.entity.Segmentation">
