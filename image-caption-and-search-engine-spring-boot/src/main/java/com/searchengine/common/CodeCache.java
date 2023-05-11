@@ -12,14 +12,12 @@ import java.util.List;
 
 @Component
 /**
- * @author: 将某些数据缓存到全局变量中
- * @description: TODO
- * @date: 2022-06-03 18:24
+将某些数据缓存到全局变量中
  */
 public class CodeCache {
 
     public static Trie trie = new Trie();
-
+    
     @Autowired
     private SegmentationDao segmentationDao;
 

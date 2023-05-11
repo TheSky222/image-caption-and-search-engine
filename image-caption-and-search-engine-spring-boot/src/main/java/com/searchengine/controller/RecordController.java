@@ -56,8 +56,8 @@ public class RecordController {
 
     private final int pageSize = 15;
 
-    @Value(("${web.upload-path}"))
-    private String uploadPath;
+//    @Value(("${web.upload-path}"))
+//    private String uploadPath;
 
     @Autowired
     private TService tService;
@@ -123,7 +123,6 @@ public class RecordController {
 
     /**
      * 分词查询  根据tidif值从大到小排序
-     *
      * @param searchInfo
      * @return
      */
@@ -170,41 +169,40 @@ public class RecordController {
     }
 
 
-    /**
-     * 以图搜图
-     *
-     * @return list里面装的全是url
-     * @throws Exception
-     */
-    @RequestMapping(value = "/imageUpload", method = RequestMethod.POST)
-    @ResponseBody
-    public List<String> register(@RequestParam("file") MultipartFile file) {
-        System.out.println(file);
-        //文件上传
-        if (!file.isEmpty()) {
-            try {
-                //获取图片名称,先再G盘下创建images文件夹，这样不用File.exists()检查文件夹是否存在
-                String fileName = file.getOriginalFilename();
-                String saveUri = uploadPath+"/"+fileName;
-                File saveFile = new File(saveUri);
-                if (!saveFile.exists()){
-                    saveFile.mkdirs();
-                }
-                file.transferTo(saveFile);
-                return socketUtil.img2Img(saveUri);
-            } catch (Exception e) {
-                e.printStackTrace();
-                ArrayList<String> list = new ArrayList<>();
-                list.add("图片上传失败!");
-
-                return list;
-            }
-
-        }
-        ArrayList<String> list = new ArrayList<>();
-        list.add("图片上传失败!");
-        return list;
-    }
+//    /**
+//     * 以图搜图
+//     * @return list里面装的全是url
+//     * @throws Exception
+//     */
+//    @RequestMapping(value = "/imageUpload", method = RequestMethod.POST)
+//    @ResponseBody
+//    public List<String> register(@RequestParam("file") MultipartFile file) {
+//        System.out.println(file);
+//        //文件上传
+//        if (!file.isEmpty()) {
+//            try {
+//                //获取图片名称,先再G盘下创建images文件夹，这样不用File.exists()检查文件夹是否存在
+//                String fileName = file.getOriginalFilename();
+//                String saveUri = uploadPath+"/"+fileName;
+//                File saveFile = new File(saveUri);
+//                if (!saveFile.exists()){
+//                    saveFile.mkdirs();
+//                }
+//                file.transferTo(saveFile);
+//                return socketUtil.img2Img(saveUri);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                ArrayList<String> list = new ArrayList<>();
+//                list.add("图片上传失败!");
+//
+//                return list;
+//            }
+//
+//        }
+//        ArrayList<String> list = new ArrayList<>();
+//        list.add("图片上传失败!");
+//        return list;
+//    }
 
 
 
@@ -221,9 +219,6 @@ public class RecordController {
 
     /**
      * 新增文本
-     *
-     * @param record
-     * @return
      */
     @PostMapping("/add")
     public boolean add(Record record) {
@@ -232,9 +227,6 @@ public class RecordController {
 
     /**
      * 模糊查询
-     *
-     * @param word
-     * @return
      */
     @GetMapping("/s_word")
     public List<Record> getRecordByWord(@RequestParam("word") String word) {

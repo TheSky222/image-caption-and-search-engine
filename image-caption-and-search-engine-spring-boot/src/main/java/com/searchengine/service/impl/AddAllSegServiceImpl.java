@@ -41,9 +41,7 @@ public class AddAllSegServiceImpl implements AddAllSegService {
     private TDao tDao;
 
     /**
-     * @author: optimjie
      * @description: 先单纯的添加分词表，为关系表的建立做准备
-     * @date: 2022-05-23 10:53
      */
     public void addSegs() {
         // List<Record> records = recordService.queryAllRecord();
@@ -90,10 +88,8 @@ public class AddAllSegServiceImpl implements AddAllSegService {
     }
 
     /**
-     * @author: optimjie
      * @description: 分表按照segId的最后两位来分，这样可以保证每个表是比较均匀的。
      * 因为在关系表很大的时候，主要的瓶颈在于找到所有包含某一个segId的data再将所有的tf值加起来比较大小
-     * @date: 2022-05-23 11:01
      */
     public void addAllSegUseSplit() {
         List<Segmentation> segmentations = segmentationService.queryAllSeg();

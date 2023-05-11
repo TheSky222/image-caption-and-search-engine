@@ -32,11 +32,6 @@ public class SegmentationController {
 
     /**
      * @Description: python调用接口
-     * @Param:
-     * @Return:
-     * @Author: gxp
-     * @Date: 2023/5/5
-     * @ModifierAndOtherInfo：
      **/
     @PostMapping("/saveData")
     public String saveData(@RequestBody DataDto dto){
